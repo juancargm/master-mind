@@ -19,7 +19,7 @@ class Game(db.Model):
 class GameModel(object):
     """ Model for performing operations on the entity Game """
     @staticmethod
-    def getAll():
+    def get_all():
         """Gets all the users games that have been played
 
         Returns:
@@ -28,7 +28,7 @@ class GameModel(object):
         return {game.user: GameInfo(game.solution, game.attempts) for game in Game.query.all()}
 
     @staticmethod
-    def addGame(user, solution):
+    def add_game(user, solution):
         """Adds a new game for a given user
 
         Args:
@@ -37,4 +37,25 @@ class GameModel(object):
         """
         new_game = Game(user=user, solution=solution, attempts=0)
         db.session.add(new_game)
+        db.session.commit()
+
+    @staticmethod
+    def delete_game(user):
+        """Remove an user's game
+
+        Args:
+            user (str): the user name.
+        """
+        db.session.query(Game).filter_by(user=user).delete()
+        db.session.commit()
+
+    @staticmethod
+    def update_game_attemps(user, attemps):
+        """Update the number of attemps made in a Game
+
+        Args:
+            user (str): the user.
+            attemps (int): the new number of attempts.
+        """
+        db.session.query(Game).filter_by(user=user).update({"attempts": attemps})
         db.session.commit()

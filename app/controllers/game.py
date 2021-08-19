@@ -27,7 +27,7 @@ def guess_code():
     """
     content = request.json
 
-    if content.get("user") and content.get("guess"):
+    if content and content.get("user") and content.get("guess"):
         return GameService.guess_code(content.get("user"), content.get('guess'))
     else:
         return "Bad request: missing user or guess.", 400

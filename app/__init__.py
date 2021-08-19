@@ -6,10 +6,16 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
-def init_app() -> Flask:
+def init_app(test_config=None) -> Flask:
     """ Initialize the core application. """
     app = Flask(__name__, instance_relative_config=False)
-    app.config.from_object('config.Config')
+
+    if test_config is None:
+        # Read from the config object
+        app.config.from_object('config.Config')
+    else:
+        # Load the test config if passed in
+        app.config.update(test_config)
 
     db.init_app(app)
 

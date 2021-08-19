@@ -15,23 +15,8 @@ class GameService(object):
     # Named tuple for readability
     Feedback = namedtuple('Feedback', ['black_pegs', 'white_pegs'])
 
-    def __generate_game_solution():
-        """Generates a new solution composed of 4 colors from those available in the App.
-
-        Returns:
-            str: the computed solution.
-        """
-        colors = app.config["AVAILABLE_COLORS"]
-        random.shuffle(colors)
-
-        if not app.config["ALLOW_DUPLICATES"]:
-            solution = random.sample(colors, k=4)
-        else:
-            solution = random.choices(colors, k=4)
-
-        return "".join(solution)
-    
-    def __is_valid_guess(guess):
+    @staticmethod
+    def is_valid_guess(guess):
         """Determines if an user guess is valid in length and colors
 
         Args:
@@ -48,8 +33,9 @@ class GameService(object):
                     return False
             
             return True
-    
-    def __get_solution_feedback(solution, guess):
+
+    @staticmethod
+    def get_solution_feedback(solution, guess):
         """Compares the user's prediction and generates corresponding feedback
         in black and white pegs.
 
@@ -89,6 +75,23 @@ class GameService(object):
         return GameService.Feedback(black, white)
 
     @staticmethod
+    def generate_game_solution():
+        """Generates a new solution composed of 4 colors from those available in the App.
+
+        Returns:
+            str: the computed solution.
+        """
+        colors = app.config["AVAILABLE_COLORS"]
+        random.shuffle(colors)
+
+        if not app.config["ALLOW_DUPLICATES"]:
+            solution = random.sample(colors, k=4)
+        else:
+            solution = random.choices(colors, k=4)
+
+        return "".join(solution)
+
+    @staticmethod
     def reset_game(user):
         """Resets the game for an user
 
@@ -124,7 +127,7 @@ class GameService(object):
         Args:
             user (str): the username.
         """
-        solution = GameService.__generate_game_solution()
+        solution = GameService.generate_game_solution()
         GameModel.add_game(user, solution)
         GameService.games[user] = GameInfo(solution, 0)
 
@@ -139,7 +142,7 @@ class GameService(object):
         Returns:
             Response: Flask response (body and status code)
         """
-        if GameService.__is_valid_guess(guess):
+        if GameService.is_valid_guess(guess):
             if user not in GameService.games:
                 # Start new game for that user and persist the game in DB
                 GameService.add_game(user)
@@ -147,7 +150,7 @@ class GameService(object):
                 # The user losses in his last move, so the game resets
                 GameService.reset_game(user)
             
-            feedback = GameService.__get_solution_feedback(GameService.games[user].solution, guess)
+            feedback = GameService.get_solution_feedback(GameService.games[user].solution, guess)
 
             # Register the attempt
             GameService.games[user] = GameInfo(GameService.games[user].solution, GameService.games[user].attempts + 1)
